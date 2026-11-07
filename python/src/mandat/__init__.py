@@ -10,7 +10,7 @@ from .policy import CompiledPolicy, Decision, PolicyError, compile_policy
 from .redact import redact
 from .remote import ControlPlane, FilePolicy, HttpLedger, MemoryLedger, RemoteApprovals, RemotePolicy, RemoteRevocations, StaticPolicy
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "AuthError", "CompiledPolicy", "ControlPlane", "Decision", "ExprError", "FilePolicy", "Guard", "GuardDenied", "HttpLedger",

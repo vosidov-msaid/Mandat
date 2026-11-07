@@ -26,16 +26,16 @@ The examples pin an exact version. Use the version you have reviewed: an unpinne
 
 ```bash
 claude mcp add acme -e MANDAT_AGENT_SECRET=<secret> -- \
-  npx -y mandat@0.1.5 bridge --url https://mcp.example.com/mcp --mandat http://127.0.0.1:7400 --agent claude-code --login
+  npx -y mandat@0.2.0 bridge --url https://mcp.example.com/mcp --mandat http://127.0.0.1:7400 --agent claude-code --login
 ```
 
-On Windows, start the command with `cmd /c`: `… -- cmd /c npx -y mandat@0.1.5 bridge …`. If `mandat` is installed globally, `… -- cmd /c mandat bridge …` works too.
+On Windows, start the command with `cmd /c`: `… -- cmd /c npx -y mandat@0.2.0 bridge …`. If `mandat` is installed globally, `… -- cmd /c mandat bridge …` works too.
 
 **`.mcp.json`** (Claude Code project config, Claude Desktop, Cursor). On Windows, use `"command": "cmd"` and put `"/c", "npx"` at the start of `args`.
 
 ```json
 { "mcpServers": { "acme": { "command": "npx",
-  "args": ["-y", "mandat@0.1.5", "bridge", "--url", "https://mcp.example.com/mcp", "--mandat", "http://127.0.0.1:7400",
+  "args": ["-y", "mandat@0.2.0", "bridge", "--url", "https://mcp.example.com/mcp", "--mandat", "http://127.0.0.1:7400",
            "--agent", "claude-code", "--login"],
   "env": { "MANDAT_AGENT_SECRET": "<secret>" } } } }
 ```
@@ -45,7 +45,7 @@ On Windows, start the command with `cmd /c`: `… -- cmd /c npx -y mandat@0.1.5 
 ```toml
 [mcp_servers.acme]
 command = "npx"
-args = ["-y", "mandat@0.1.5", "bridge", "--url", "https://mcp.example.com/mcp", "--mandat", "http://127.0.0.1:7400",
+args = ["-y", "mandat@0.2.0", "bridge", "--url", "https://mcp.example.com/mcp", "--mandat", "http://127.0.0.1:7400",
         "--agent", "codex", "--login"]
 env = { MANDAT_AGENT_SECRET = "<secret>" }
 

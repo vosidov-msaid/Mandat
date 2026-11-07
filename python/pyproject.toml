@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mandat"
-version = "0.1.0"
+version = "0.2.0"
 description = "Authorization, delegation and audit for AI agent actions (MCP-first): Python guard for Mandat."
 readme = "README.md"
 license = "Apache-2.0"

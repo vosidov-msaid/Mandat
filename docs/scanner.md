@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: vosidov-msaid/Mandat@v0.1.5      # pin a release tag (or a commit SHA)
+      - uses: vosidov-msaid/Mandat@v0.2.0      # pin a release tag (or a commit SHA)
         id: scan
         with:
           configs: .mcp.json .vscode/mcp.json
