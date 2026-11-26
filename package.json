@@ -28,7 +28,7 @@
   "scripts": {
     "build": "node scripts/build.ts",
     "prepack": "node scripts/build.ts",
-    "test": "node --test \"test/**/*.test.ts\"",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json",
     "controlplane": "node bin/mandat.ts serve",
     "demo:server": "node examples/refund-server/server.ts",
