@@ -1,0 +1,24 @@
+// The scanner page on Cloudflare Containers. Deployed by Workers Builds (root directory: deploy/cloudflare),
+// which builds the repository's Dockerfile, so no local Docker is needed. See docs/scanner.md.
+{
+	"name": "mandat-scanner",
+	"main": "worker.js",
+	"compatibility_date": "2026-11-26",
+	"observability": { "enabled": true },
+	"routes": [{ "pattern": "scan.themandat.xyz", "custom_domain": true }],
+	"containers": [
+		{
+			"class_name": "Scanner",
+			"scheduling_policy": "durable_object",
+			"images": {
+				"base": { "dockerfile": "../../Dockerfile", "build_context": "../.." }
+			}
+		}
+	],
+	"durable_objects": {
+		"bindings": [{ "name": "SCANNER", "class_name": "Scanner" }]
+	},
+	"exports": {
+		"Scanner": { "type": "durable-object", "storage": "sqlite" }
+	}
+}
