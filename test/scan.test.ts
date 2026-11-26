@@ -1,12 +1,24 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { scanConfigFile, scanSource } from "../src/scan/static.ts";
 import { scanRemote } from "../src/scan/remote.ts";
 import { formatSarif, shouldFail } from "../src/scan/findings.ts";
+
+test("pre-commit hook: pinned to this package version, and `npm version` re-pins it", () => {
+  const version = JSON.parse(readFileSync("package.json", "utf8")).version;
+  assert.match(readFileSync(".pre-commit-hooks.yaml", "utf8"), new RegExp(`entry: npx --yes mandat@${version.replace(/\./g, "\\.")} scan-config`));
+
+  const dir = mkdtempSync(join(tmpdir(), "mandat-hook-"));
+  writeFileSync(join(dir, "package.json"), JSON.stringify({ version: "9.8.7" }));
+  writeFileSync(join(dir, ".pre-commit-hooks.yaml"), "- entry: npx --yes mandat@0.2.0 scan-config\n");
+  execFileSync(process.execPath, [resolve("scripts/sync-hook-version.ts")], { cwd: dir });
+  assert.equal(readFileSync(join(dir, ".pre-commit-hooks.yaml"), "utf8"), "- entry: npx --yes mandat@9.8.7 scan-config\n");
+});
 
 test("config scan: supply chain, shell, secrets, binding, filesystem, static tokens", () => {
   const dir = mkdtempSync(join(tmpdir(), "mandat-scan-"));
@@ -24,6 +36,9 @@ test("config scan: supply chain, shell, secrets, binding, filesystem, static tok
       "win-ok": { "command": "cmd", "args": ["/c", "npx", "-y", "mandat@0.1.1", "bridge", "--login"] },
       "win-unpinned": { "command": "cmd", "args": ["/c", "npx", "-y", "postmark-mcp"] },
       "win-string": { "command": "cmd", "args": ["/c", "npx -y foo & del /q C:\\\\x"] },
+      "old-browser": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-puppeteer@2025.5.12"] },
+      "old-github": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"] },
+      "maintained": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-memory@2.0.1"] },
     }
   }`);
   const r = scanConfigFile(file);
@@ -35,6 +50,11 @@ test("config scan: supply chain, shell, secrets, binding, filesystem, static tok
   assert.deepEqual(rules("web"), ["MDT-C008"]);
   assert.deepEqual(rules("remote"), ["MDT-C007", "MDT-C011"]);
   assert.deepEqual(rules("ok"), []);
+  // Deprecated reference servers are flagged even when pinned; maintained ones from the same publisher are not.
+  assert.deepEqual(rules("old-browser"), ["MDT-C012"]);
+  assert.deepEqual(rules("old-github"), ["MDT-C001", "MDT-C012"]);
+  assert.deepEqual(rules("maintained"), []);
+  assert.match(r.findings.find((f) => f.location?.server === "old-browser")!.fix, /@playwright\/mcp/);
   // Windows `cmd /c` wrappers: plain commands are unwrapped and analysed, shell strings are flagged.
   assert.deepEqual(rules("win-ok"), []);
   assert.deepEqual(rules("win-unpinned"), ["MDT-C001", "MDT-C002"]);

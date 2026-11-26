@@ -28,12 +28,13 @@
   "scripts": {
     "build": "node scripts/build.ts",
     "prepack": "node scripts/build.ts",
-    "test": "node --test \"test/**/*.test.ts\"",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json",
     "controlplane": "node bin/mandat.ts serve",
     "demo:server": "node examples/refund-server/server.ts",
     "demo": "node examples/demo.ts",
-    "demo:sdk-server": "node examples/sdk-server/server.ts"
+    "demo:sdk-server": "node examples/sdk-server/server.ts",
+    "version": "node scripts/sync-hook-version.ts && git add .pre-commit-hooks.yaml"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

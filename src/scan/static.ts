@@ -25,6 +25,19 @@ const KNOWN_PACKAGES = [
   "mcp-server-fetch", "mcp-server-git", "mcp-server-time", "mcp-server-sqlite", "firecrawl-mcp", "figma-developer-mcp", "mcp-remote",
 ];
 
+/**
+ * Reference servers their publisher deprecated on npm and archived: no security fixes will ship. Coding agents
+ * still install them from training data (Glow Labs, "MCPhantom", Nov 2026). Value: a replacement, if one is known.
+ */
+const DEPRECATED: Record<string, string> = {
+  "@modelcontextprotocol/server-github": "GitHub's official server (github/github-mcp-server)",
+  "@modelcontextprotocol/server-puppeteer": "@playwright/mcp",
+  ...Object.fromEntries([
+    "server-postgres", "server-slack", "server-brave-search", "server-google-maps", "server-gitlab", "server-gdrive",
+    "server-redis", "create-server", "server-aws-kb-retrieval", "server-everart",
+  ].map((name) => [`@modelcontextprotocol/${name}`, ""])),
+};
+
 /** Package versions publicly reported as malicious. */
 const MALICIOUS: Array<{ pkg: string; versions: (v: string | null) => boolean; why: string }> = [
   { pkg: "postmark-mcp", versions: (v) => !v || cmpVersion(v, "1.0.16") >= 0, why: "versions >= 1.0.16 silently BCC every e-mail to an attacker address (Sep 2025)" },
@@ -96,6 +109,8 @@ export function scanServers(servers: Record<string, ServerEntry>, file: string, 
         }
         const bad = MALICIOUS.find((m) => m.pkg === pkg && m.versions(version));
         if (bad) add({ rule: "MDT-C002", severity: "critical", title: `Known-malicious package '${pkg}${version ? "@" + version : ""}'`, detail: bad.why, fix: "Remove it, rotate every credential it could access, and audit outbound traffic.", owasp: ["ASI04", "MCP04"] });
+        const instead = DEPRECATED[pkg];
+        if (instead !== undefined) add({ rule: "MDT-C012", severity: "high", title: `Deprecated, unmaintained server '${pkg}'`, detail: "Its publisher deprecated it on npm and archived the repository, so vulnerabilities in it will not be fixed. Pinning a version does not help. Coding agents often install it from their training data.", fix: `Replace it with ${instead || "the service owner's own MCP server, if there is one"}.`, owasp: ["ASI04", "MCP04"] });
         const squat = KNOWN_PACKAGES.find((k) => k !== pkg && levenshtein(k, pkg) <= 2 && pkg.length > 5);
         if (squat) add({ rule: "MDT-C003", severity: "high", title: `Possible typosquat: '${pkg}' looks like '${squat}'`, detail: "Package names one or two characters away from popular MCP servers are a common supply-chain lure.", fix: `Verify the publisher; did you mean '${squat}'?`, owasp: ["ASI04", "MCP04"] });
       }
