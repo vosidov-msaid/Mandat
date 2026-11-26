@@ -131,6 +131,25 @@ It is built to be hosted publicly, where strangers choose the URLs:
 - **No injection from reports.** Report text comes from the scanned server, so it is rendered as text only, under a strict Content Security Policy.
 - **Pasted configs are only parsed,** never executed. Reports are kept in memory for 7 days.
 
+## Deploy the web page on Cloudflare
+
+[`deploy/cloudflare/`](../deploy/cloudflare) runs the repository's [`Dockerfile`](../Dockerfile) on Cloudflare Containers, behind a small Worker:
+- every request goes to one container, because reports and rate limits live in its memory;
+- rate limiting uses the visitor's address from Cloudflare (`CF-Connecting-IP`), which visitors cannot forge;
+- after 6 hours without traffic (Cloudflare's maximum) the container stops, and the next request starts it again in a few seconds. Share links from before then expire.
+
+You need the Workers Paid plan (Containers are not on the Free plan), and the domain's DNS on Cloudflare. Cloudflare builds the image, so you don't need Docker:
+
+1. In [`wrangler.jsonc`](../deploy/cloudflare/wrangler.jsonc), set `routes` to your hostname. Delete any existing DNS record for that hostname: Cloudflare creates it.
+2. In the dashboard: **Workers & Pages → Create → Import a repository**, then choose your fork of this repository:
+   - **Worker name:** `mandat-scanner` (it must match `name` in `wrangler.jsonc`)
+   - **Root directory:** `deploy/cloudflare`
+   - **Build command:** leave empty
+   - **Deploy command:** `npx --yes wrangler@4.161.0 deploy`
+3. Every push to the production branch builds and deploys again.
+
+With Docker installed you can also deploy from your machine: `cd deploy/cloudflare && npx --yes wrangler@4.161.0 deploy`.
+
 ## Deploy the web page on Fly.io
 
 The repository ships a [`Dockerfile`](../Dockerfile) and a [`fly.toml`](../fly.toml):
