@@ -15,7 +15,6 @@ When an AI agent calls a tool, Mandat answers three questions:
 
 It also ships a **scanner** for the authentication and supply-chain mistakes common in MCP servers and client configs.
 
-**→ Scan your MCP server now: [scan.themandat.xyz](https://scan.themandat.xyz)**
 
 ## Install
 
