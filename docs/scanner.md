@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: vosidov-msaid/Mandat@v0.1.5      # pin a release tag (or a commit SHA)
+      - uses: vosidov-msaid/Mandat@v0.2.0      # pin a release tag (or a commit SHA)
         id: scan
         with:
           configs: .mcp.json .vscode/mcp.json
@@ -83,6 +83,37 @@ jobs:
 ```
 
 Inputs: `configs` (space-separated files), `src` (source directory), `url` (a live endpoint to scan), and `fail-on`.
+
+## pre-commit hook
+
+With [pre-commit](https://pre-commit.com), every commit that changes an MCP client config (`.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`, `claude_desktop_config.json`, `mcp_config.json`) is scanned, and high or critical findings block the commit:
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/vosidov-msaid/Mandat
+    rev: v0.3.0          # a release tag; each one runs the npm package of the same version
+    hooks:
+      - id: mandat-scan-config
+```
+
+It needs Node.js 20 or newer on the machine. The hook is available from v0.3.0.
+
+## GitLab CI
+
+```yaml
+# .gitlab-ci.yml
+mandat-scan:
+  image: node:24-alpine
+  script:
+    - npx --yes mandat@0.2.0 scan-config .mcp.json --format sarif --out mandat.sarif --fail-on none
+    - npx --yes mandat@0.2.0 scan-config .mcp.json --fail-on high
+  artifacts:
+    when: always
+    paths: [mandat.sarif]
+```
+
+The first line saves a SARIF report as a job artifact; the second prints the findings and fails the job on high or critical ones. List your own config files in place of `.mcp.json`, and add `--src <dir>` to scan your server's source too.
 
 ## Scanner web page
 

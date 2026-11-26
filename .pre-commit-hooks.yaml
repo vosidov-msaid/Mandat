@@ -1,0 +1,8 @@
+# pre-commit hook (https://pre-commit.com): scans MCP client configs whenever one is committed.
+# It runs the published npm package, pinned to this release; `npm version` keeps the pin in step.
+- id: mandat-scan-config
+  name: Mandat MCP config scan
+  description: Flags unpinned, malicious, typosquatted and deprecated MCP servers, shell commands and plaintext secrets in MCP client configs.
+  entry: npx --yes mandat@0.2.0 scan-config
+  language: system
+  files: (^|/)(\.mcp\.json|mcp\.json|mcp_config\.json|claude_desktop_config\.json)$
