@@ -37,6 +37,7 @@ npx mandat scan-config .mcp.json --src ./server # specific files, plus a static 
 **Client configs** are checked for:
 - unpinned `npx` / `uvx` / `pipx` packages and `@latest`;
 - known-malicious package versions and likely typosquats;
+- deprecated, unmaintained servers, such as the archived `@modelcontextprotocol/server-*` reference servers that coding agents still install;
 - servers launched through a shell, and `curl | sh`;
 - plaintext secrets and static bearer tokens;
 - servers listening on `0.0.0.0`, broad filesystem roots, and privileged Docker containers.

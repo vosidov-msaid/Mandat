@@ -24,6 +24,9 @@ test("config scan: supply chain, shell, secrets, binding, filesystem, static tok
       "win-ok": { "command": "cmd", "args": ["/c", "npx", "-y", "mandat@0.1.1", "bridge", "--login"] },
       "win-unpinned": { "command": "cmd", "args": ["/c", "npx", "-y", "postmark-mcp"] },
       "win-string": { "command": "cmd", "args": ["/c", "npx -y foo & del /q C:\\\\x"] },
+      "old-browser": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-puppeteer@2025.5.12"] },
+      "old-github": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"] },
+      "maintained": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-memory@2.0.1"] },
     }
   }`);
   const r = scanConfigFile(file);
@@ -35,6 +38,11 @@ test("config scan: supply chain, shell, secrets, binding, filesystem, static tok
   assert.deepEqual(rules("web"), ["MDT-C008"]);
   assert.deepEqual(rules("remote"), ["MDT-C007", "MDT-C011"]);
   assert.deepEqual(rules("ok"), []);
+  // Deprecated reference servers are flagged even when pinned; maintained ones from the same publisher are not.
+  assert.deepEqual(rules("old-browser"), ["MDT-C012"]);
+  assert.deepEqual(rules("old-github"), ["MDT-C001", "MDT-C012"]);
+  assert.deepEqual(rules("maintained"), []);
+  assert.match(r.findings.find((f) => f.location?.server === "old-browser")!.fix, /@playwright\/mcp/);
   // Windows `cmd /c` wrappers: plain commands are unwrapped and analysed, shell strings are flagged.
   assert.deepEqual(rules("win-ok"), []);
   assert.deepEqual(rules("win-unpinned"), ["MDT-C001", "MDT-C002"]);
